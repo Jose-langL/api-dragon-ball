@@ -1,28 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-  
-    <link rel="stylesheet" href="./Estilos.css">
+    <meta name="theme-color" content="#101522">
+    <meta name="description" content="Explora personajes del universo Dragon Ball y consulta sus detalles.">
+    <title>Dragon Ball | Personajes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./Estilos.css">
 </head>
 <body>
     <header class="ContentHeader">
-        <div class="imagenlog">
-        <img src="./Multimedia/Titulo.png" alt="DragonBallAPi" class="logo">
-        </div>
-        <div class="buscar">
-            <input type="text"  id="Buscar" placeholder="Buscar datos...">
-            <button id="BtnBuscar"><img src="./Multimedia/lupa.svg "alt="lupa" class="logolupa"></button>
-        </div>
+        <a class="imagenlog" href="./Index.html" aria-label="Dragon Ball, inicio">
+            <img src="./Multimedia/Titulo.png" alt="Dragon Ball API" class="logo">
+        </a>
+        <p class="subtitulo">Explora el universo y sus guerreros</p>
+        <form class="buscar" id="FormularioBusqueda" role="search">
+            <label class="solo-lectores" for="Buscar">Buscar personajes por nombre o raza</label>
+            <input type="search" id="Buscar" placeholder="Busca un personaje o una raza…" autocomplete="off">
+            <button id="BtnBuscar" type="submit" aria-label="Buscar">
+                <img src="./Multimedia/lupa.svg" alt="" class="logolupa">
+            </button>
+        </form>
     </header>
 
-    <main>
-        <div id="TarjetaPersonaje">
+    <main class="contenido-principal">
+        <div class="encabezado-lista">
+            <div>
+                <p class="sobre-titulo">CENTRO DE EXPLORACIÓN</p>
+                <h1>Radar Saiyajin</h1>
+            </div>
+            <p id="Estado" aria-live="polite">Cargando personajes…</p>
+        </div>
+        <div class="explorador">
+            <section class="panel-radar" aria-label="Radar de personajes">
+                <div class="radar-marco">
+                    <div id="Radar" class="radar" role="group" aria-label="Selecciona un punto del radar para ver un personaje">
+                        <span class="radar-centro" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="ayuda-radar">
+                    <span class="indicador-pulso" aria-hidden="true"></span>
+                    <span id="AyudaRadar">Selecciona una señal para explorar</span>
+                </div>
+                <div class="controles">
+                    <button id="Anterior" type="button" aria-label="Personaje anterior">←</button>
+                    <span>Usa las flechas del teclado</span>
+                    <button id="Siguiente" type="button" aria-label="Personaje siguiente">→</button>
+                </div>
+            </section>
+            <section class="panel-personaje" aria-label="Personaje seleccionado">
+                <div id="TarjetaPersonaje" class="escena-tarjeta">
+                    <p class="mensajeError">Cargando señal…</p>
+                </div>
+                <p class="instruccion-tarjeta">Haz clic en la tarjeta para ver sus datos</p>
+            </section>
+        </div>
     </main>
-    
-    <script src="main.js"></script>
+
+    <script type="module" src="./main.js"></script>
 </body>
 </html>
