@@ -1,104 +1,82 @@
-const URL = "https://dragonball-api.com/api/characters?limit=15";
+import { obtenerPersonajes } from "./js/personajes.js";
+import { mostrarPersonaje, mostrarRadar } from "./js/vista.js";
 
-const Personajes = [];
+const tarjeta = document.querySelector("#TarjetaPersonaje");
+const formularioBusqueda = document.querySelector("#FormularioBusqueda");
+const campoBusqueda = document.querySelector("#Buscar");
+const estado = document.querySelector("#Estado");
+const radar = document.querySelector("#Radar");
+const ayudaRadar = document.querySelector("#AyudaRadar");
+const botonAnterior = document.querySelector("#Anterior");
+const botonSiguiente = document.querySelector("#Siguiente");
 
-async function Info() {
-    try {
-        const resultado = await fetch(URL);
-        if (!resultado.ok) {
-            throw new Error("No se encontro api");
-        }
-        const data = await resultado.json();
-        Personajes.push(...data.items);
-        filtrarPersonaje(Personajes);
-    } catch (error) {
-        console.error("Ocurrio un error:", error.message);
-    }
+let personajes = [];
+let personajesVisibles = [];
+let indiceSeleccionado = 0;
+
+function seleccionarPersonaje(indice) {
+    if (personajesVisibles.length === 0) return;
+
+    indiceSeleccionado = (indice + personajesVisibles.length) % personajesVisibles.length;
+    const personaje = personajesVisibles[indiceSeleccionado];
+    mostrarPersonaje(tarjeta, personaje);
+    mostrarRadar(radar, personajesVisibles, indiceSeleccionado, seleccionarPersonaje);
+    ayudaRadar.textContent = `Señal ${indiceSeleccionado + 1} de ${personajesVisibles.length}: ${personaje.name || "Personaje"}`;
 }
 
-function filtrarPersonaje(datos) {
-    const contenidoPersonaje = document.getElementById("TarjetaPersonaje");
-    contenidoPersonaje.innerHTML = "";
+function actualizarResultados() {
+    const busqueda = campoBusqueda.value.trim().toLocaleLowerCase();
+    const idSeleccionado = personajesVisibles[indiceSeleccionado]?.id;
 
-    //Recorrido del array y filtrando informacion del los mismos
-    //Creacion del modal que filtra informacion del los personajes tambien
-    datos.forEach(personaje => {
-        contenidoPersonaje.innerHTML += `
-        <div class="CardPersonaje" id="CardPersonaje-${personaje.id}">
-            <h2 class="NombrePersonaje">${personaje.name}</h2>
-            <img src="${personaje.image}">
-
-
-             <button class="openModal">Ver mas</button>
-            <div class="modal"> 
-                <div class="modal-content">
-                    <h1>Descripcion</h1>
-                    <p class="InformacionModal">${personaje.description}</p>
-                    <h4>ki</h4>
-                    <p class="InformacionModal">${personaje.ki}</p>
-                    <h4>Maximo ki</h4>
-                    <p class="InformacionModal">${personaje.maxKi}</p>
-                    <h4>Raza</h4>
-                    <p class="InformacionModal">${personaje.race}</p>
-                    <span class="close">X</span>
-                </div>
-            </div> 
-        </div>
-        `;
-
+    personajesVisibles = personajes.filter((personaje) => {
+        const nombre = (personaje.name || "").toLocaleLowerCase();
+        const raza = (personaje.race || "").toLocaleLowerCase();
+        return nombre.includes(busqueda) || raza.includes(busqueda);
     });
 
-    const openmodal = document.getElementsByClassName("openModal");
-    const modals = document.getElementsByClassName("modal");
-    const closeBtns = document.getElementsByClassName("close");
+    const nuevoIndice = personajesVisibles.findIndex((personaje) => personaje.id === idSeleccionado);
+    indiceSeleccionado = nuevoIndice >= 0 ? nuevoIndice : 0;
+    estado.textContent = `${personajesVisibles.length} señal${personajesVisibles.length === 1 ? "" : "es"} en el radar`;
+    seleccionarPersonaje(indiceSeleccionado);
 
-    //Para abrir modal
-    let borrar = "none"
-    let mostrar = "flex"
-    let abierto = false;
-    for(let i = 0; i < openmodal.length; i++){
-        openmodal[i].addEventListener('click', function(){
-            modals[i].style.display = abierto? borrar : mostrar;
-            abierto = !abierto;
-        });
-    }
-
-    // Cerrar modal
-    for(let i = 0; i < closeBtns.length; i++){
-        closeBtns[i].addEventListener('click', function(){
-            modals[i].style.display = 'none';
-        });
+    if (personajesVisibles.length === 0) {
+        mostrarPersonaje(tarjeta, null);
+        mostrarRadar(radar, [], 0, seleccionarPersonaje);
+        ayudaRadar.textContent = "No hay señales con esa búsqueda";
     }
 }
 
-
-//Funcion para activar el buscador y muestre la informacion
-async function buscar(data) {
-    const InputBuscar = document.getElementById("Buscar");
-    const Valorinput = InputBuscar.value.toLowerCase();
-
-    const personajesFiltrados = data.filter(personaje =>
-        personaje.name.toLowerCase().includes(Valorinput) ||
-        personaje.race.toLowerCase().includes(Valorinput)
-    );
-
-    //mensaje no se encontro personaje
-       if (personajesFiltrados.length === 0) {
-        const contenidoPersonaje = document.getElementById("TarjetaPersonaje");
-        contenidoPersonaje.innerHTML = `
-            <h2 class="mensajeError">
-                No se encontro ningun personaje
-            </h2>
-        `;
-        return;
-        }
-
-    await filtrarPersonaje(personajesFiltrados);
-}
-
-document.querySelector("#BtnBuscar").addEventListener("click", function () {
-    buscar(Personajes);
+formularioBusqueda.addEventListener("submit", (evento) => {
+    evento.preventDefault();
+    actualizarResultados();
 });
 
-console.log(Personajes)
-Info();
+campoBusqueda.addEventListener("input", actualizarResultados);
+botonAnterior.addEventListener("click", () => seleccionarPersonaje(indiceSeleccionado - 1));
+botonSiguiente.addEventListener("click", () => seleccionarPersonaje(indiceSeleccionado + 1));
+
+document.addEventListener("keydown", (evento) => {
+    if (["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(evento.key)) {
+        const elementoActivo = document.activeElement;
+        if (elementoActivo === campoBusqueda || elementoActivo.isContentEditable) return;
+        evento.preventDefault();
+        const avanzar = evento.key === "ArrowRight" || evento.key === "ArrowDown";
+        seleccionarPersonaje(indiceSeleccionado + (avanzar ? 1 : -1));
+    }
+});
+
+async function iniciar() {
+    estado.textContent = "Cargando personajes…";
+
+    try {
+        personajes = await obtenerPersonajes();
+        actualizarResultados();
+    } catch (error) {
+        console.error("No se pudieron cargar los personajes:", error);
+        estado.textContent = "No fue posible cargar los personajes. Revisa tu conexión e inténtalo de nuevo.";
+        tarjeta.innerHTML = "";
+        ayudaRadar.textContent = "No se pudieron encontrar señales";
+    }
+}
+
+iniciar();
