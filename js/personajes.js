@@ -1,4 +1,4 @@
-const URL_PERSONAJES = "https://dragonball-api.com/api/characters?limit=15";
+const URL_PERSONAJES = "https://dragonball-api.com/api/characters?limit=100";
 
 export async function obtenerPersonajes() {
     const respuesta = await fetch(URL_PERSONAJES);
